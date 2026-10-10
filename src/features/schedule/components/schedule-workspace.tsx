@@ -195,7 +195,13 @@ export function ScheduleWorkspace({
                             className="w-full"
                             id={`${fieldPrefix}-activity`}
                           >
-                            <SelectValue placeholder="Selecciona una actividad" />
+                            <SelectValue placeholder="Selecciona una actividad">
+                              {(value: string | null) =>
+                                value
+                                  ? activityTitle(value, activities)
+                                  : "Selecciona una actividad"
+                              }
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {activities.map((activity) => (
