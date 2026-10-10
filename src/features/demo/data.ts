@@ -1,0 +1,85 @@
+import type { Activity } from "@/features/activities/types/activity";
+import type { UploadedFile } from "@/features/files/types/uploaded-file";
+import type { ActivitySchedule } from "@/features/schedule/types/activity-schedule";
+
+export const DEMO_ACTIVITIES: readonly Activity[] = [
+  {
+    id: "10000000-0000-4000-8000-000000000001",
+    title: "Repasar programación orientada a objetos",
+    category: "academic",
+    activityDate: "2026-10-14",
+    startTime: "18:00",
+    endTime: "19:30",
+    priority: "high",
+    createdAt: "2026-10-10T14:00:00.000Z",
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000002",
+    title: "Preparar presentación del hackathon",
+    category: "academic",
+    activityDate: "2026-10-16",
+    startTime: "16:00",
+    endTime: "17:30",
+    priority: "high",
+    createdAt: "2026-10-10T14:05:00.000Z",
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000003",
+    title: "Turno de trabajo",
+    category: "work",
+    activityDate: "2026-10-15",
+    startTime: "09:00",
+    endTime: "13:00",
+    priority: "medium",
+    createdAt: "2026-10-10T14:10:00.000Z",
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000004",
+    title: "Entrenamiento en el gimnasio",
+    category: "personal",
+    activityDate: "2026-10-17",
+    startTime: "08:00",
+    endTime: "09:00",
+    priority: "low",
+    createdAt: "2026-10-10T14:15:00.000Z",
+  },
+] as const;
+
+export const DEMO_SCHEDULES: readonly ActivitySchedule[] = [
+  {
+    id: "20000000-0000-4000-8000-000000000001",
+    activityId: DEMO_ACTIVITIES[0].id,
+    dayOfWeek: 0,
+    allocatedMinutes: 60,
+    alertBeforeStartMinutes: 15,
+    alertOnEnd: true,
+  },
+  {
+    id: "20000000-0000-4000-8000-000000000002",
+    activityId: DEMO_ACTIVITIES[1].id,
+    dayOfWeek: 2,
+    allocatedMinutes: 50,
+    alertBeforeStartMinutes: 10,
+    alertOnEnd: true,
+  },
+  {
+    id: "20000000-0000-4000-8000-000000000003",
+    activityId: DEMO_ACTIVITIES[0].id,
+    dayOfWeek: 4,
+    allocatedMinutes: 45,
+    alertBeforeStartMinutes: 5,
+    alertOnEnd: false,
+  },
+] as const;
+
+export const DEMO_FILES: readonly UploadedFile[] = [
+  {
+    id: "30000000-0000-4000-8000-000000000001",
+    activityId: DEMO_ACTIVITIES[0].id,
+    objectPath: "demo/programacion/guia-poo.pdf",
+    originalName: "Guía de programación orientada a objetos.pdf",
+    mimeType: "application/pdf",
+    sizeBytes: 786432,
+    createdAt: "2026-10-10T15:00:00.000Z",
+  },
+] as const;
