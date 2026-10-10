@@ -9,13 +9,15 @@ import type { DeleteFileResult, FileOperationResult } from "@/features/files/lib
 export async function uploadDemoFile(form: FormData): Promise<FileOperationResult> {
   try {
     const activityId = form.get("activityId");
+    const dayOfWeek = Number(form.get("dayOfWeek"));
     const file = form.get("file");
     if (!z.uuid().safeParse(activityId).success || !(file instanceof File)) return { status: "error", message: "Selecciona una actividad y un archivo válidos." };
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) return { status: "error", message: "Selecciona un día válido." };
     if (file.size < 1 || file.size > 10 * 1024 * 1024 || !file.name.trim() || file.name.length > 255) return { status: "error", message: "El archivo debe tener contenido y pesar como máximo 10 MB." };
     const state = await readDemoState();
     if (!state.activities.some((activity) => activity.id === activityId)) return { status: "error", message: "La actividad no está disponible." };
     const uploaded = {
-      id: crypto.randomUUID(), activityId: activityId as string,
+      id: crypto.randomUUID(), activityId: activityId as string, dayOfWeek,
       objectPath: "demo-local", originalName: file.name,
       mimeType: file.type || "application/octet-stream", sizeBytes: file.size, createdAt: new Date().toISOString(),
     };

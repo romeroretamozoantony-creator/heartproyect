@@ -308,9 +308,10 @@ export function ScheduleWorkspace({
 
                 <DayFileUpload
                   activityId={enabled ? (days[index]?.activityId ?? "") : ""}
+                  dayOfWeek={index}
                   demoMode={demoMode}
                   disabled={!enabled}
-                  files={files.filter((file) => file.activityId === days[index]?.activityId)}
+                  files={files.filter((file) => file.dayOfWeek === index)}
                   onDeleted={(fileId) =>
                     setFiles((current) => current.filter((file) => file.id !== fileId))
                   }

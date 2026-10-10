@@ -74,6 +74,7 @@ export async function uploadActivityFile(
   activityId: string,
   file: File,
   demoMode: boolean,
+  dayOfWeek: number,
 ): Promise<FileOperationResult> {
   if (!z.uuid().safeParse(activityId).success) return { status: "error", message: "La actividad seleccionada no es válida." };
   const validationError = validateFile(file);
@@ -85,6 +86,7 @@ export async function uploadActivityFile(
   if (demoMode) {
     const form = new FormData();
     form.set("activityId", activityId);
+    form.set("dayOfWeek", String(dayOfWeek));
     form.set("file", file);
     return uploadDemoFile(form);
   }
@@ -105,7 +107,8 @@ export async function uploadActivityFile(
       .select("id").eq("id", activityId).eq("user_id", userId).maybeSingle();
     if (activityError || !activity) return { status: "error", message: "La actividad no está disponible." };
 
-    const objectPath = `${userId}/${activityId}/${safeObjectName(file.name)}`;
+    // El prefijo con el día evita colisiones cuando una misma rutina está en varios días.
+    const objectPath = `${userId}/${activityId}/${dayOfWeek}-${safeObjectName(file.name)}`;
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(objectPath, file, {
@@ -126,6 +129,7 @@ export async function uploadActivityFile(
       .insert({
         user_id: userId,
         activity_id: activityId,
+        day_of_week: dayOfWeek,
         storage_bucket: STORAGE_BUCKET,
         object_path: objectPath,
         original_name: file.name,
@@ -133,7 +137,7 @@ export async function uploadActivityFile(
         size_bytes: file.size,
       })
       .select(
-        "id, activity_id, object_path, original_name, mime_type, size_bytes, created_at",
+        "id, activity_id, day_of_week, object_path, original_name, mime_type, size_bytes, created_at",
       )
       .single();
 

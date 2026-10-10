@@ -116,6 +116,7 @@ export const DEMO_FILES: readonly UploadedFile[] = [
   {
     id: "30000000-0000-4000-8000-000000000001",
     activityId: DEMO_ACTIVITIES[0].id,
+    dayOfWeek: null,
     objectPath: "demo/programacion/guia-poo.pdf",
     originalName: "Guía de programación orientada a objetos.pdf",
     mimeType: "application/pdf",

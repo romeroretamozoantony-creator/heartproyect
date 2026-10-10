@@ -12,6 +12,7 @@ import type { UploadedFile } from "@/features/files/types/uploaded-file";
 
 type DayFileUploadProps = Readonly<{
   demoMode: boolean;
+  dayOfWeek: number;
   activityId: string;
   disabled: boolean;
   files: readonly UploadedFile[];
@@ -31,6 +32,7 @@ function formatFileSize(sizeBytes: number) {
 
 export function DayFileUpload({
   demoMode,
+  dayOfWeek,
   activityId,
   disabled,
   files,
@@ -56,7 +58,7 @@ export function DayFileUpload({
 
     setIsUploading(true);
     setResult(null);
-    const nextResult = await uploadActivityFile(activityId, selectedFile, demoMode);
+    const nextResult = await uploadActivityFile(activityId, selectedFile, demoMode, dayOfWeek);
     setResult(nextResult);
 
     if (nextResult.status === "success") {

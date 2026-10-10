@@ -41,7 +41,7 @@ export async function getUploadedFiles(): Promise<UploadedFilesQueryResult> {
     const { data, error } = await supabase
       .from("uploaded_files")
       .select(
-        "id, activity_id, object_path, original_name, mime_type, size_bytes, created_at",
+        "id, activity_id, day_of_week, object_path, original_name, mime_type, size_bytes, created_at",
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
