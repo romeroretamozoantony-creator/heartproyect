@@ -7,7 +7,6 @@ import {
   Clock3,
   Save,
 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
@@ -42,7 +41,7 @@ import {
 } from "@/features/schedule/schemas/weekly-schedule-schema";
 import type { ActivitySchedule } from "@/features/schedule/types/activity-schedule";
 import type { Activity } from "@/features/activities/types/activity";
-import { ActivityFileManager } from "@/features/files/components/activity-file-manager";
+import { DayFileUpload } from "@/features/files/components/day-file-upload";
 import type { UploadedFile } from "@/features/files/types/uploaded-file";
 import { GeneratePlanButton } from "@/features/planner/components/generate-plan-button";
 
@@ -50,7 +49,6 @@ const ALERT_OPTIONS = [5, 10, 15, 30, 60] as const;
 
 type ScheduleWorkspaceProps = Readonly<{
   demoMode: boolean;
-  activities: readonly Activity[];
   routines: readonly Activity[];
   initialFiles: readonly UploadedFile[];
   initialSchedules: readonly ActivitySchedule[];
@@ -65,7 +63,6 @@ function activityTitle(activityId: string, routines: readonly Activity[]) {
 
 export function ScheduleWorkspace({
   demoMode,
-  activities,
   routines,
   initialFiles,
   initialSchedules,
@@ -89,6 +86,7 @@ export function ScheduleWorkspace({
     mode: "onBlur",
   });
   const days = useWatch({ control, name: "days" });
+  const [files, setFiles] = useState<UploadedFile[]>([...initialFiles]);
 
   async function saveSchedule(values: WeeklyScheduleFormValues) {
     setResult(null);
@@ -169,7 +167,8 @@ export function ScheduleWorkspace({
                   type="hidden"
                 />
 
-                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   <div className="space-y-2 md:col-span-2 xl:col-span-1">
                     <Label htmlFor={`${fieldPrefix}-activity`}>Actividad</Label>
                     <Controller
@@ -269,7 +268,13 @@ export function ScheduleWorkspace({
                           }
                         >
                           <SelectTrigger className="w-full" id={`${fieldPrefix}-alert`}>
-                            <SelectValue />
+                            <SelectValue>
+                              {(value: string | null) =>
+                                value && value !== "none"
+                                  ? `${value} minutos antes`
+                                  : "Sin aviso previo"
+                              }
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">Sin aviso previo</SelectItem>
@@ -299,6 +304,18 @@ export function ScheduleWorkspace({
                       Avisar al terminar
                     </label>
                   </div>
+                </div>
+
+                <DayFileUpload
+                  activityId={enabled ? (days[index]?.activityId ?? "") : ""}
+                  demoMode={demoMode}
+                  disabled={!enabled}
+                  files={files.filter((file) => file.activityId === days[index]?.activityId)}
+                  onDeleted={(fileId) =>
+                    setFiles((current) => current.filter((file) => file.id !== fileId))
+                  }
+                  onUploaded={(file) => setFiles((current) => [file, ...current])}
+                />
                 </div>
               </fieldset>
             );
@@ -384,12 +401,6 @@ export function ScheduleWorkspace({
           )}
         </CardContent>
       </Card>
-
-      <ActivityFileManager
-        demoMode={demoMode}
-        activities={activities}
-        initialFiles={initialFiles}
-      />
 
       <Alert>
         <AlertDescription>

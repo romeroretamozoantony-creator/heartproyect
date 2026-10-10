@@ -72,9 +72,9 @@ async function choose(page, label, text) {
   await contains(page, 'Cronograma guardado en la demostración local.');
   console.log('PASS 3: días y tiempo guardados con la nueva actividad');
 
-  await choose(page, 'Actividad relacionada', title);
-  await page.locator('#activity-file').setInputFiles({ name: 'material-integracion.txt', mimeType: 'text/plain', buffer: Buffer.alloc(2 * 1024 * 1024, 65) });
-  await page.getByRole('button', { name: 'Subir archivo', exact: true }).click();
+  const lunes = page.locator('fieldset').filter({ hasText: 'Lunes' });
+  await lunes.getByRole('button', { name: 'Subir documento', exact: true }).waitFor();
+  await lunes.locator('input[type="file"]').setInputFiles({ name: 'material-integracion.txt', mimeType: 'text/plain', buffer: Buffer.alloc(2 * 1024 * 1024, 65) });
   await contains(page, 'Archivo guardado en la demostración local.');
   await page.reload();
   await contains(page, 'material-integracion.txt');
@@ -104,7 +104,6 @@ async function choose(page, label, text) {
   await contains(page, 'Bailar');
   await contains(page, 'Cumplida');
   await contains(page, '100%');
-  await contains(page, 'material-integracion.txt');
   await page.reload();
   await contains(page, 'Cumplida');
   assert.equal(await page.locator('section[aria-label="Resumen de progreso"]').evaluate((element) => getComputedStyle(element).display), 'grid');
@@ -112,9 +111,7 @@ async function choose(page, label, text) {
 
   // Segunda ejecución sin archivo y finalización automática real, con tiempo de servidor.
   await page.getByRole('link', { name: 'Cronograma', exact: true }).click();
-  const fileRow = page.locator('article').filter({ hasText: 'material-integracion.txt' });
-  await fileRow.getByRole('button', { name: 'Eliminar', exact: true }).click();
-  await fileRow.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await page.getByRole('button', { name: 'Eliminar material-integracion.txt', exact: true }).click();
   await contains(page, 'Archivo eliminado de la demostración local.');
   await page.getByRole('button', { name: 'Diseñar plan', exact: true }).click();
   await page.waitForURL('**/plan');
