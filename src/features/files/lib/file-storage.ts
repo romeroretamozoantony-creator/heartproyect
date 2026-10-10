@@ -8,9 +8,21 @@ import type {
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_BUCKET = "activity-files";
+export const STORAGE_BUCKET = "activity-files";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_FILE_NAME_LENGTH = 255;
+const ALLOWED_MIME_TYPES: readonly string[] = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/plain",
+  "image/png",
+  "image/jpeg",
+];
 
 export type FileOperationResult =
   | Readonly<{ status: "success"; message: string; file: UploadedFile }>
@@ -49,6 +61,10 @@ function validateFile(file: File) {
 
   if (!file.name.trim() || file.name.length > MAX_FILE_NAME_LENGTH) {
     return "El nombre del archivo no es válido.";
+  }
+
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    return "Tipo de archivo no permitido. Usa PDF, Word, PowerPoint, Excel, texto o imágenes PNG/JPG.";
   }
 
   return null;
@@ -169,17 +185,6 @@ export async function deleteActivityFile(
       return { status: "error", message: "El archivo no está disponible." };
     }
 
-    const { error: storageError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .remove([stored.object_path]);
-
-    if (storageError) {
-      return {
-        status: "error",
-        message: "No se pudo eliminar el archivo del almacenamiento.",
-      };
-    }
-
     const { data, error: metadataError } = await supabase
       .from("uploaded_files")
       .delete()
@@ -191,11 +196,23 @@ export async function deleteActivityFile(
     if (metadataError || !data) {
       return {
         status: "error",
-        message: "El archivo se eliminó, pero no se pudo actualizar el listado.",
+        message: "No se pudo eliminar el archivo.",
       };
     }
 
+    const { error: storageError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .remove([stored.object_path]);
+
     await refreshFilePages();
+
+    if (storageError) {
+      return {
+        status: "success",
+        message: "El archivo se quitó del listado, pero no se pudo borrar del almacenamiento.",
+      };
+    }
+
     return { status: "success", message: "Archivo eliminado correctamente." };
   } catch {
     return {

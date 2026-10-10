@@ -16,6 +16,7 @@ Las migraciones deben aplicarse en orden:
 8. `20261010000800_session_actual_time.sql`: conservar el tiempo real al cerrar inmediatamente y rechazar reinicios de bloques completados.
 
 9. `20261010000900_phase_8_2_access_controls.sql`: rutas y metadatos de archivos, RPC controladas, transiciones de planes y una sesión activa por usuario.
+10. `20261010001000_restrict_activity_file_types.sql`: limita los tipos MIME aceptados por el bucket `activity-files`.
 
 Todavía no se ha enlazado un proyecto remoto ni se han agregado credenciales. Cuando exista un proyecto de Supabase se podrán aplicar mediante Supabase CLI o, de forma controlada, desde el SQL Editor.
 
@@ -25,7 +26,7 @@ Todavía no se ha enlazado un proyecto remoto ni se han agregado credenciales. C
 - Acceso: privado.
 - Límite por archivo: 10 MB.
 - Ruta esperada: `user_id/activity_id/nombre-seguro`.
-- No se restringen tipos MIME hasta que el equipo defina los formatos aceptados.
+- Tipos MIME permitidos: PDF, Word, PowerPoint, Excel, texto plano, PNG y JPG. La misma lista se valida en el cliente antes de subir.
 
 ## Seguridad
 
@@ -52,7 +53,7 @@ identificadores de autenticación.
 
 `tests/schema_security.test.sql` valida el inventario básico de seguridad y el
 trigger de perfiles. Requiere una instancia local o remota preparada para
-ejecutar pruebas pgTAP. `npm run test:rls` ejecuta las nueve migraciones y 23 pruebas con dos identidades
+ejecutar pruebas pgTAP. `npm run test:rls` ejecuta las diez migraciones y 23 pruebas con dos identidades
 en PostgreSQL local mediante PGlite. `npm run test:supabase:live` verifica Auth y
 Storage por HTTP al configurar dos cuentas reales de pruebas. Ver
 `docs/fase-8-2.md` para las variables y el alcance de cada prueba.

@@ -2,9 +2,10 @@ import type { Activity } from "@/features/activities/types/activity";
 import type { GeneratedPlanBlock } from "@/features/planner/types/study-plan";
 import type { ActivitySchedule } from "@/features/schedule/types/activity-schedule";
 
+export const PLAN_TIME_ZONE = "America/Lima";
+
 const FOCUS_MINUTES = 25;
 const SHORT_BREAK_MINUTES = 5;
-const LIMA_OFFSET = "-05:00";
 
 type PlannerInput = Readonly<{
   activities: readonly Activity[];
@@ -17,18 +18,47 @@ export type GeneratedStudyPlan = Readonly<{
   blocks: GeneratedPlanBlock[];
 }>;
 
-function limaDateKey(date: Date) {
+function zonedParts(date: Date) {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
+    hourCycle: "h23",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   }).formatToParts(date);
-  const value = Object.fromEntries(
+
+  return Object.fromEntries(
     parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]),
   );
+}
 
-  return `${value.year}-${value.month}-${value.day}`;
+export function dateKeyInPlanZone(date: Date) {
+  const { year, month, day } = zonedParts(date);
+
+  return `${year}-${month}-${day}`;
+}
+
+function zoneOffsetMs(instant: Date) {
+  const { year, month, day, hour, minute, second } = zonedParts(instant);
+  const wallClockAsUtc = Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+  );
+
+  return wallClockAsUtc - Math.floor(instant.getTime() / 1000) * 1000;
+}
+
+function zonedInstant(dateKey: string, time: string) {
+  const wallClockAsUtc = Date.parse(`${dateKey}T${time}:00Z`);
+
+  return new Date(wallClockAsUtc - zoneOffsetMs(new Date(wallClockAsUtc)));
 }
 
 function addDays(dateKey: string, days: number) {
@@ -42,26 +72,44 @@ function weekdayIndex(dateKey: string) {
   return (sundayBased + 6) % 7;
 }
 
-function nextDateForWeekday(
+function nextOccurrence(
   baseDate: string,
   dayOfWeek: number,
   startTime: string,
   now: Date,
 ) {
   const difference = (dayOfWeek - weekdayIndex(baseDate) + 7) % 7;
-  let date = addDays(baseDate, difference);
-  let scheduled = new Date(`${date}T${startTime}:00${LIMA_OFFSET}`);
+  let dateKey = addDays(baseDate, difference);
+  let start = zonedInstant(dateKey, startTime);
 
-  if (scheduled.getTime() <= now.getTime()) {
-    date = addDays(date, 7);
-    scheduled = new Date(`${date}T${startTime}:00${LIMA_OFFSET}`);
+  if (start.getTime() <= now.getTime()) {
+    dateKey = addDays(dateKey, 7);
+    start = zonedInstant(dateKey, startTime);
   }
 
-  return scheduled;
+  return { dateKey, start };
 }
 
 function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60_000);
+}
+
+function assertNoOverlaps(blocks: readonly GeneratedPlanBlock[]) {
+  const ordered = [...blocks].sort(
+    (first, second) =>
+      Date.parse(first.scheduledStart) - Date.parse(second.scheduledStart),
+  );
+
+  for (let index = 1; index < ordered.length; index += 1) {
+    const previous = ordered[index - 1];
+    const current = ordered[index];
+
+    if (Date.parse(current.scheduledStart) < Date.parse(previous.scheduledEnd)) {
+      throw new Error(
+        `Los bloques "${previous.title}" y "${current.title}" se solapan. Ajusta la hora de inicio o la duración en el cronograma.`,
+      );
+    }
+  }
 }
 
 export function generatePomodoroPlan({
@@ -72,7 +120,7 @@ export function generatePomodoroPlan({
   const activityById = new Map(
     activities.map((activity) => [activity.id, activity]),
   );
-  const today = limaDateKey(now);
+  const today = dateKeyInPlanZone(now);
   const sessions = schedules
     .map((schedule) => {
       const activity = activityById.get(schedule.activityId);
@@ -84,15 +132,21 @@ export function generatePomodoroPlan({
       return {
         activity,
         schedule,
-        start: nextDateForWeekday(
-          today,
-          schedule.dayOfWeek,
-          activity.startTime,
-          now,
-        ),
+        ...nextOccurrence(today, schedule.dayOfWeek, activity.startTime, now),
       };
     })
+    .filter(
+      ({ activity, dateKey }) =>
+        !activity.activityDate || dateKey <= activity.activityDate,
+    )
     .sort((first, second) => first.start.getTime() - second.start.getTime());
+
+  if (sessions.length === 0) {
+    throw new Error(
+      "Ninguna sesión del cronograma ocurre antes de la fecha de sus actividades.",
+    );
+  }
+
   const blocks: GeneratedPlanBlock[] = [];
 
   for (const session of sessions) {
@@ -135,13 +189,11 @@ export function generatePomodoroPlan({
     }
   }
 
-  if (blocks.length === 0) {
-    throw new Error("El cronograma no contiene tiempo para generar un plan.");
-  }
+  assertNoOverlaps(blocks);
 
   const planDate = new Intl.DateTimeFormat("es-PE", {
     dateStyle: "medium",
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
   }).format(now);
 
   return {

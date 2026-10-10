@@ -29,7 +29,7 @@ try {
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid$$;
     grant usage on schema auth, storage, public to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
-    create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint);
+    create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
     create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets(id), name text, owner_id text, metadata jsonb, unique(bucket_id,name));
     create function storage.foldername(name text) returns text[] language sql immutable as $$select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'),1)-1]$$;
     alter table storage.objects enable row level security;
@@ -39,7 +39,7 @@ try {
   for (const file of (await readdir(migrations)).filter(f => f.endsWith('.sql')).sort()) {
     await db.exec(await readFile(new URL(file, migrations), 'utf8'));
   }
-  await check('Las nueve migraciones se aplican sin modificar su SQL', async () => {
+  await check('Las diez migraciones se aplican sin modificar su SQL', async () => {
     const { rows } = await db.query("select count(*)::int as n from pg_class c join pg_namespace n on c.relnamespace=n.oid where n.nspname='public' and c.relkind='r' and c.relrowsecurity");
     assert.equal(rows[0].n, 12);
   });
@@ -77,8 +77,8 @@ try {
     await denied('select * from replace_activity_schedules($1)',[JSON.stringify([row,row])],'23505');
     assert.equal((await db.query('select * from activity_schedules')).rows.length,1);
   }));
-  await check('Bucket privado con límite de 10 MB', async () => {
-    assert.deepEqual((await db.query("select public, file_size_limit::int from storage.buckets where id='activity-files'")).rows,[{public:false,file_size_limit:10485760}]);
+  await check('Bucket privado con límite de 10 MB y tipos permitidos', async () => {
+    assert.deepEqual((await db.query("select public, file_size_limit::int, cardinality(allowed_mime_types)::int as tipos from storage.buckets where id='activity-files'")).rows,[{public:false,file_size_limit:10485760,tipos:10}]);
   });
   await check('Cada usuario puede cargar y registrar su propio archivo', async () => {
     for (const [user,activity,path] of [[A,activityA,pathA],[B,activityB,pathB]]) await as(user, async () => {

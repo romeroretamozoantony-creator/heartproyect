@@ -86,12 +86,11 @@ export async function signIn(
     const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
     if (error) {
-      const message =
-        error.code === "email_not_confirmed"
-          ? "Confirma tu correo electrónico antes de iniciar sesión."
-          : "Correo o contraseña incorrectos.";
-
-      return { status: "error", message };
+      return {
+        status: "error",
+        message:
+          "No fue posible iniciar sesión. Revisa tu correo y contraseña; si acabas de registrarte, confirma tu cuenta primero.",
+      };
     }
   } catch {
     return serviceError();
@@ -113,8 +112,11 @@ export async function signUp(
   }
 
   if (isDemoMode()) {
-    await createDemoSession();
-    redirect("/activities");
+    return {
+      status: "error",
+      message:
+        "El registro no está disponible en la demostración. Usa las credenciales de demostración para ingresar.",
+    };
   }
 
   if (!hasSupabasePublicEnv()) {

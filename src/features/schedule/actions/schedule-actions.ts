@@ -15,6 +15,7 @@ import { mutateDemoState } from "@/features/demo/store";
 import { isDemoMode } from "@/features/demo/mode";
 import { hasSupabasePublicEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUserId } from "@/lib/supabase/session";
 
 export type SaveScheduleResult =
   | Readonly<{
@@ -75,10 +76,7 @@ export async function saveActivitySchedules(
 
   try {
     const supabase = await createClient();
-    const { data: claimsData, error: claimsError } =
-      await supabase.auth.getClaims();
-
-    if (claimsError || !claimsData?.claims?.sub) {
+    if (!(await getAuthenticatedUserId(supabase))) {
       return {
         status: "error",
         message: "Tu sesión ha vencido. Inicia sesión nuevamente.",

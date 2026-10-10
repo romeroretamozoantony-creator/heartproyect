@@ -14,6 +14,7 @@ import type {
 } from "@/features/pomodoro/types/pomodoro-session";
 import { hasSupabasePublicEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUserId } from "@/lib/supabase/session";
 
 export type SessionActionResult =
   | Readonly<{
@@ -63,10 +64,7 @@ export async function transitionPomodoroSession(
 
   try {
     const supabase = await createClient();
-    const { data: claimsData, error: claimsError } =
-      await supabase.auth.getClaims();
-
-    if (claimsError || !claimsData?.claims?.sub) {
+    if (!(await getAuthenticatedUserId(supabase))) {
       return {
         status: "error",
         message: "Tu sesión ha vencido. Inicia sesión nuevamente.",

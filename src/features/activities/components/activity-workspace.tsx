@@ -243,7 +243,7 @@ export function ActivityWorkspace({
                           ¿Eliminar esta actividad?
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Esta acción no se puede deshacer.
+                          Se eliminarán también sus archivos, su cronograma, sus bloques del plan, sus sesiones y su progreso. Esta acción no se puede deshacer.
                         </p>
                         <div className="mt-3 flex justify-end gap-2">
                           <Button

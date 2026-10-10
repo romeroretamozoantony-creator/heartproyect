@@ -8,6 +8,7 @@ import type {
 } from "@/features/evaluations/types/evaluation";
 import { isDemoMode } from "@/features/demo/mode";
 import { readDemoState } from "@/features/demo/store";
+import { dateKeyInPlanZone } from "@/features/planner/lib/pomodoro-planner";
 import type {
   ActivityProgressItem,
   CategoryProgressItem,
@@ -89,21 +90,6 @@ function percentageAverage(items: readonly ActivityProgressItem[]) {
   );
 }
 
-function limaDateKey(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Lima",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const values = Object.fromEntries(
-    parts
-      .filter((part) => part.type !== "literal")
-      .map((part) => [part.type, part.value]),
-  );
-
-  return `${values.year}-${values.month}-${values.day}`;
-}
 
 function addDays(dateKey: string, amount: number) {
   const date = new Date(`${dateKey}T00:00:00Z`);
@@ -115,11 +101,11 @@ function createDailyFocus(
   sessions: readonly DailyPomodoroRow[],
   today = new Date(),
 ): DailyFocusItem[] {
-  const todayKey = limaDateKey(today);
+  const todayKey = dateKeyInPlanZone(today);
   const minutesByDate = new Map<string, number>();
 
   for (const session of sessions) {
-    const dateKey = limaDateKey(new Date(session.ended_at));
+    const dateKey = dateKeyInPlanZone(new Date(session.ended_at));
     minutesByDate.set(
       dateKey,
       (minutesByDate.get(dateKey) ?? 0) + session.elapsed_seconds / 60,
@@ -304,7 +290,7 @@ export async function getProgressOverview(): Promise<ProgressQueryResult> {
     let completedPomodoros = 0;
     let plannedFocusMinutes = 0;
     let actualFocusMinutes = 0;
-    const firstChartDate = addDays(limaDateKey(new Date()), -6);
+    const firstChartDate = addDays(dateKeyInPlanZone(new Date()), -6);
     const { data: dailySessionData, error: dailySessionError } = await supabase
       .from("pomodoro_sessions")
       .select("elapsed_seconds, ended_at")

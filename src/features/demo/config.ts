@@ -1,3 +1,5 @@
+import "server-only";
+
 export const DEMO_EMAIL = "demo@mobileheart.local";
 export const DEMO_PASSWORD = "Demo1234!";
 export const DEMO_SESSION_COOKIE = "mobile-heart-demo-session";

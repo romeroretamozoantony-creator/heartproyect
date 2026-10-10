@@ -73,9 +73,9 @@ directorio temporal del servidor local. Este almacenamiento no reemplaza Supabas
 ni está diseñado para varios servidores o un despliegue en Vercel.
 
 Para volver a Supabase, cambia ambas variables a `false`, completa la URL y clave
-pública, aplica las nueve migraciones en orden y reinicia el servidor.
+pública, aplica las diez migraciones en orden y reinicia el servidor.
 
-La demostración se desactiva en producción, salvo la excepción explícita
+La demostración no se activa en Vercel (variable `VERCEL`), porque su estado vive en disco local y no se comparte entre instancias. Se desactiva en producción, salvo la excepción explícita
 `ALLOW_DEMO_IN_PRODUCTION=true` destinada a pruebas de una compilación local.
 Los arneses E2E configuran esa excepción en sus propios servidores.
 

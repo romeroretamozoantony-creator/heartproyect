@@ -23,6 +23,7 @@ import {
   restructureStudyPlan,
   type PlanTransitionResult,
 } from "@/features/planner/actions/plan-actions";
+import { PLAN_TIME_ZONE } from "@/features/planner/lib/pomodoro-planner";
 import type {
   PlanStatus,
   StudyPlan,
@@ -45,7 +46,7 @@ function formatConfirmationDate(value: string) {
   return new Intl.DateTimeFormat("es-PE", {
     dateStyle: "medium",
     timeStyle: "short",
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
   }).format(new Date(value));
 }
 

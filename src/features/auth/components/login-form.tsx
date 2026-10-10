@@ -17,13 +17,17 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "@/features/auth/schemas/login-schema";
-import { DEMO_EMAIL, DEMO_PASSWORD } from "@/features/demo/config";
+type DemoCredentials = Readonly<{
+  email: string;
+  password: string;
+}>;
 
 type LoginFormProps = Readonly<{
   demoMode?: boolean;
+  demoCredentials?: DemoCredentials;
 }>;
 
-export function LoginForm({ demoMode = false }: LoginFormProps) {
+export function LoginForm({ demoMode = false, demoCredentials }: LoginFormProps) {
   const [result, setResult] = useState<AuthActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const {
@@ -33,8 +37,8 @@ export function LoginForm({ demoMode = false }: LoginFormProps) {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: demoMode ? DEMO_EMAIL : "",
-      password: demoMode ? DEMO_PASSWORD : "",
+      email: demoCredentials?.email ?? "",
+      password: demoCredentials?.password ?? "",
     },
     mode: "onBlur",
   });
@@ -53,11 +57,11 @@ export function LoginForm({ demoMode = false }: LoginFormProps) {
       onChange={() => setResult(null)}
       onSubmit={handleSubmit(submit)}
     >
-      {demoMode ? (
+      {demoMode && demoCredentials ? (
         <Alert>
           <AlertTitle>Modo demostración activo</AlertTitle>
           <AlertDescription>
-            Usa {DEMO_EMAIL} con la contraseña {DEMO_PASSWORD}. Los campos ya
+            Usa {demoCredentials.email} con la contraseña {demoCredentials.password}. Los campos ya
             están completados.
           </AlertDescription>
         </Alert>

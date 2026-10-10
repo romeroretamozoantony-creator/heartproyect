@@ -10,6 +10,7 @@ import { generatePomodoroPlan } from "@/features/planner/lib/pomodoro-planner";
 import { getActivitySchedules } from "@/features/schedule/data/schedule-queries";
 import { hasSupabasePublicEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUserId } from "@/lib/supabase/session";
 
 export type GeneratePlanResult =
   | Readonly<{
@@ -45,11 +46,9 @@ async function getAuthenticatedPlanClient() {
   }
 
   const supabase = await createClient();
-  const { data: claimsData, error: claimsError } =
-    await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
+  const userId = await getAuthenticatedUserId(supabase);
 
-  if (claimsError || !userId) {
+  if (!userId) {
     return {
       error: "Tu sesión ha vencido. Inicia sesión nuevamente.",
     } as const;
@@ -107,10 +106,9 @@ export async function generateStudyPlan(): Promise<GeneratePlanResult> {
     }
 
     const supabase = await createClient();
-    const { data: claimsData, error: claimsError } =
-      await supabase.auth.getClaims();
+    const userId = await getAuthenticatedUserId(supabase);
 
-    if (claimsError || !claimsData?.claims?.sub) {
+    if (!userId) {
       return {
         status: "error",
         message: "Tu sesión ha vencido. Inicia sesión nuevamente.",
@@ -118,7 +116,7 @@ export async function generateStudyPlan(): Promise<GeneratePlanResult> {
     }
 
     const { data: runningSessions, error: runningError } = await supabase
-      .from("pomodoro_sessions").select("id").eq("user_id", claimsData.claims.sub)
+      .from("pomodoro_sessions").select("id").eq("user_id", userId)
       .in("status", ["running", "paused"]).limit(1);
     if (runningError || runningSessions?.length) return {
       status: "error", message: "Completa o cancela la sesión actual antes de diseñar otro plan.",

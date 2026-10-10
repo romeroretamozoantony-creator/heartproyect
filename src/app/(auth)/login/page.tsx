@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/features/demo/config";
 import { isDemoMode } from "@/features/demo/mode";
 
 export const metadata: Metadata = {
@@ -84,7 +85,12 @@ async function LoginContent({ searchParams }: PageProps<"/login">) {
             searchParams={searchParams}
           />
         </Suspense>
-        <LoginForm demoMode={demoMode} />
+        <LoginForm
+          demoMode={demoMode}
+          demoCredentials={
+            demoMode ? { email: DEMO_EMAIL, password: DEMO_PASSWORD } : undefined
+          }
+        />
       </CardContent>
 
       <CardFooter className="justify-center text-center text-sm text-muted-foreground">

@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PlanExecutionPanel } from "@/features/planner/components/plan-execution-panel";
+import { PLAN_TIME_ZONE } from "@/features/planner/lib/pomodoro-planner";
 import type {
   PlanBlock,
   StudyPlan,
@@ -33,7 +34,7 @@ type PlanOverviewProps = Readonly<{
 
 function dateKey(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -43,7 +44,7 @@ function dateKey(value: string) {
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("es-PE", {
     dateStyle: "full",
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
   }).format(new Date(value));
 }
 
@@ -52,7 +53,7 @@ function formatTime(value: string) {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "America/Lima",
+    timeZone: PLAN_TIME_ZONE,
   }).format(new Date(value));
 }
 
