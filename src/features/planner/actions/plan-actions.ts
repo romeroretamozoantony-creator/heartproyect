@@ -67,7 +67,7 @@ export async function generateStudyPlan(): Promise<GeneratePlanResult> {
   }
 
   const [activitiesResult, schedulesResult] = await Promise.all([
-    getActivities(),
+    getActivities("rutina"),
     getActivitySchedules(),
   ]);
 

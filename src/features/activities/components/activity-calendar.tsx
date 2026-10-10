@@ -101,15 +101,18 @@ export function ActivityCalendar({
     parseLocalDate(initialDate),
   );
 
-  const entries: CalendarEntry[] = activities.map((activity) => ({
-    id: activity.id,
-    title: activity.title,
-    category: activity.category,
-    activityDate: activity.activityDate,
-    startTime: activity.startTime,
-    endTime: activity.endTime,
-    isDraft: false,
-  }));
+  // Solo los registros con fecha y horario aparecen en el calendario.
+  const entries: CalendarEntry[] = activities
+    .filter((activity) => activity.activityDate && activity.startTime && activity.endTime)
+    .map((activity) => ({
+      id: activity.id,
+      title: activity.title,
+      category: activity.category,
+      activityDate: activity.activityDate ?? "",
+      startTime: activity.startTime ?? "",
+      endTime: activity.endTime ?? "",
+      isDraft: false,
+    }));
 
   if (preview && !isSavedPreview(preview, activities)) {
     entries.push({

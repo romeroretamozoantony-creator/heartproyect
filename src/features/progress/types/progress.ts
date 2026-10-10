@@ -6,7 +6,7 @@ export type ActivityProgressItem = Readonly<{
   title: string;
   category: Activity["category"];
   priority: Activity["priority"];
-  activityDate: string;
+  activityDate: string | null;
   completionPercentage: number;
   isCompleted: boolean;
 }>;

@@ -15,6 +15,7 @@ export function createScheduleDays(
       enabled: Boolean(saved),
       activityId: saved?.activityId ?? "",
       allocatedMinutes: saved?.allocatedMinutes ?? 30,
+      startTime: saved?.startTime ?? "",
       alertBeforeStartMinutes: saved?.alertBeforeStartMinutes ?? null,
       alertOnEnd: saved?.alertOnEnd ?? false,
     };

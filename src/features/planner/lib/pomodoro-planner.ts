@@ -129,10 +129,17 @@ export function generatePomodoroPlan({
         throw new Error("El cronograma contiene una actividad no disponible.");
       }
 
+      // Las rutinas usan la hora del día del cronograma; los registros, su horario.
+      const startTime = schedule.startTime ?? activity.startTime;
+
+      if (!startTime) {
+        throw new Error("Una actividad del cronograma no tiene hora de inicio.");
+      }
+
       return {
         activity,
         schedule,
-        ...nextOccurrence(today, schedule.dayOfWeek, activity.startTime, now),
+        ...nextOccurrence(today, schedule.dayOfWeek, startTime, now),
       };
     })
     .filter(

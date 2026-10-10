@@ -21,7 +21,7 @@ import { getAuthenticatedUserId, type ServerSupabase } from "@/lib/supabase/sess
 
 const activityIdSchema = z.string().uuid();
 
-const ACTIVITY_COLUMNS = "id, title, category, activity_date, start_time, end_time, priority, created_at";
+const ACTIVITY_COLUMNS = "id, title, category, kind, activity_date, start_time, end_time, priority, created_at";
 const PLAN_FIELDS = ["title", "activityDate", "startTime", "endTime"] as const;
 const PLAN_NOT_MARKED_NOTICE = "El plan no se marcó para reestructurarse; revísalo en Plan de estudio.";
 
@@ -95,7 +95,7 @@ export async function createActivity(
   }
 
   if (isDemoMode()) {
-    const activity = { id: crypto.randomUUID(), ...parsed.data, createdAt: new Date().toISOString() };
+    const activity = { id: crypto.randomUUID(), kind: "registro" as const, ...parsed.data, createdAt: new Date().toISOString() };
     await mutateDemoState((state) => { state.activities.push(activity); });
     refreshActivityPages();
     return { status: "success", message: "Actividad guardada en la demostración local.", activity };
@@ -134,7 +134,7 @@ export async function createActivity(
         priority,
       })
       .select(
-        "id, title, category, activity_date, start_time, end_time, priority, created_at",
+        "id, title, category, kind, activity_date, start_time, end_time, priority, created_at",
       )
       .single();
 
@@ -243,7 +243,7 @@ export async function updateActivity(
       .eq("id", parsedId.data)
       .eq("user_id", userId)
       .select(
-        "id, title, category, activity_date, start_time, end_time, priority, created_at",
+        "id, title, category, kind, activity_date, start_time, end_time, priority, created_at",
       )
       .maybeSingle();
 

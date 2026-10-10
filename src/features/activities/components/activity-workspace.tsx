@@ -83,12 +83,12 @@ export function ActivityWorkspace({
 
   function previewActivity(activity: ActivityFormValues) {
     setPreview(activity);
-    focusCalendar(activity.activityDate);
+    if (activity.activityDate) focusCalendar(activity.activityDate);
   }
 
   function addActivity(activity: Activity) {
     setActivities((current) => sortActivities([...current, activity]));
-    focusCalendar(activity.activityDate);
+    if (activity.activityDate) focusCalendar(activity.activityDate);
   }
 
   function updateSavedActivity(activity: Activity) {
@@ -98,7 +98,7 @@ export function ActivityWorkspace({
       ),
     );
     setPreview(null);
-    focusCalendar(activity.activityDate);
+    if (activity.activityDate) focusCalendar(activity.activityDate);
     setEditingId(null);
     setActionResult({
       status: "success",
@@ -229,7 +229,7 @@ export function ActivityWorkspace({
                     <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                       <p className="flex items-center gap-2">
                         <CalendarDays aria-hidden="true" className="size-4" />
-                        {formatDate(activity.activityDate)}
+                        {activity.activityDate ? formatDate(activity.activityDate) : "Sin fecha"}
                       </p>
                       <p className="flex items-center gap-2">
                         <Clock3 aria-hidden="true" className="size-4" />

@@ -16,17 +16,24 @@ export const metadata: Metadata = {
 
 async function ScheduleContent() {
   await connection();
-  const [activitiesResult, schedulesResult, filesResult] = await Promise.all([
-    getActivities(),
-    getActivitySchedules(),
-    getUploadedFiles(),
-  ]);
+  const [activitiesResult, routinesResult, schedulesResult, filesResult] =
+    await Promise.all([
+      getActivities("registro"),
+      getActivities("rutina"),
+      getActivitySchedules(),
+      getUploadedFiles(),
+    ]);
 
   return (
     <>
       {activitiesResult.error ? (
         <Alert className="mb-6" variant="destructive">
           <AlertDescription>{activitiesResult.error}</AlertDescription>
+        </Alert>
+      ) : null}
+      {routinesResult.error ? (
+        <Alert className="mb-6" variant="destructive">
+          <AlertDescription>{routinesResult.error}</AlertDescription>
         </Alert>
       ) : null}
       {schedulesResult.error ? (
@@ -42,6 +49,7 @@ async function ScheduleContent() {
       <ScheduleWorkspace
         demoMode={isDemoMode()}
         activities={activitiesResult.activities}
+        routines={routinesResult.activities}
         initialFiles={filesResult.files}
         initialSchedules={schedulesResult.schedules}
       />

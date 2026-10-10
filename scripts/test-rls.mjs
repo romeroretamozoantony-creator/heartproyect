@@ -51,7 +51,10 @@ try {
     assert.deepEqual((await db.query('select id from profiles')).rows, [{ id: A }]);
   }));
   await check('Ambos usuarios ven únicamente sus actividades', async () => {
-    for (const [user, id] of [[A,activityA],[B,activityB]]) await as(user, async () => assert.deepEqual((await db.query('select id from activities')).rows, [{ id }]));
+    for (const [user, id] of [[A,activityA],[B,activityB]]) await as(user, async () => {
+      assert.deepEqual((await db.query("select id from activities where kind='registro'")).rows, [{ id }]);
+      assert.deepEqual((await db.query('select distinct user_id from activities')).rows, [{ user_id: user }]);
+    });
   });
   await check('Cambiar o borrar una actividad ajena afecta cero filas', () => as(A, async () => {
     assert.equal((await db.query("update activities set title='Intrusión' where id=$1 returning id",[activityB])).rows.length,0);
@@ -71,9 +74,12 @@ try {
     await denied('select transition_study_plan(gen_random_uuid(),\'confirm\')',[],'42501');
   },'anon'));
   await check('Cronograma propio por RPC; actividad ajena y días duplicados rechazados', () => as(A, async () => {
-    const row={activity_id:activityA,day_of_week:0,allocated_minutes:25,alert_before_start_minutes:null,alert_on_end:false};
+    const routineA = (await db.query("select id from activities where user_id=$1 and kind='rutina' order by title limit 1",[A])).rows[0].id;
+    const row={activity_id:routineA,day_of_week:0,allocated_minutes:25,start_time:'19:00',alert_before_start_minutes:null,alert_on_end:false};
     assert.equal((await db.query('select * from replace_activity_schedules($1)',[JSON.stringify([row])])).rows.length,1);
     await denied('select * from replace_activity_schedules($1)',[JSON.stringify([{...row,activity_id:activityB}])],'23503');
+    await denied('select * from replace_activity_schedules($1)',[JSON.stringify([{...row,activity_id:activityA}])],'23503');
+    await denied('select * from replace_activity_schedules($1)',[JSON.stringify([{...row,start_time:null}])],'23514');
     await denied('select * from replace_activity_schedules($1)',[JSON.stringify([row,row])],'23505');
     assert.equal((await db.query('select * from activity_schedules')).rows.length,1);
   }));

@@ -51,20 +51,22 @@ const ALERT_OPTIONS = [5, 10, 15, 30, 60] as const;
 type ScheduleWorkspaceProps = Readonly<{
   demoMode: boolean;
   activities: readonly Activity[];
+  routines: readonly Activity[];
   initialFiles: readonly UploadedFile[];
   initialSchedules: readonly ActivitySchedule[];
 }>;
 
-function activityTitle(activityId: string, activities: readonly Activity[]) {
+function activityTitle(activityId: string, routines: readonly Activity[]) {
   return (
-    activities.find((activity) => activity.id === activityId)?.title ??
-    "Actividad no disponible"
+    routines.find((routine) => routine.id === activityId)?.title ??
+    "Opción no disponible"
   );
 }
 
 export function ScheduleWorkspace({
   demoMode,
   activities,
+  routines,
   initialFiles,
   initialSchedules,
 }: ScheduleWorkspaceProps) {
@@ -100,21 +102,15 @@ export function ScheduleWorkspace({
     }
   }
 
-  if (activities.length === 0) {
+  if (routines.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Primero registra una actividad</CardTitle>
+          <CardTitle>No hay opciones de rutina disponibles</CardTitle>
           <CardDescription>
-            El cronograma necesita al menos una actividad para poder asignarla
-            durante la semana.
+            Vuelve a cargar la página. Si el problema continúa, revisa tu sesión.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button nativeButton={false} render={<Link href="/activities" />}>
-            Ir al registro de actividades
-          </Button>
-        </CardContent>
       </Card>
     );
   }
@@ -198,15 +194,15 @@ export function ScheduleWorkspace({
                             <SelectValue placeholder="Selecciona una actividad">
                               {(value: string | null) =>
                                 value
-                                  ? activityTitle(value, activities)
+                                  ? activityTitle(value, routines)
                                   : "Selecciona una actividad"
                               }
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {activities.map((activity) => (
-                              <SelectItem key={activity.id} value={activity.id}>
-                                {activity.title}
+                            {routines.map((routine) => (
+                              <SelectItem key={routine.id} value={routine.id}>
+                                {routine.title}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -239,6 +235,22 @@ export function ScheduleWorkspace({
                     {dayError?.allocatedMinutes ? (
                       <p className="text-sm text-destructive" role="alert">
                         {dayError.allocatedMinutes.message}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`${fieldPrefix}-start`}>Hora de inicio</Label>
+                    <Input
+                      {...register(`days.${index}.startTime`)}
+                      aria-invalid={Boolean(dayError?.startTime)}
+                      disabled={!enabled}
+                      id={`${fieldPrefix}-start`}
+                      type="time"
+                    />
+                    {dayError?.startTime ? (
+                      <p className="text-sm text-destructive" role="alert">
+                        {dayError.startTime.message}
                       </p>
                     ) : null}
                   </div>
@@ -338,10 +350,15 @@ export function ScheduleWorkspace({
                   <div>
                     <p className="font-medium">{WEEKDAYS[day.dayOfWeek]}</p>
                     <p className="text-sm text-muted-foreground">
-                      {activityTitle(day.activityId, activities)}
+                      {activityTitle(day.activityId, routines)}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {day.startTime ? (
+                      <span className="rounded-full border px-2.5 py-1">
+                        {day.startTime}
+                      </span>
+                    ) : null}
                     <span className="rounded-full border px-2.5 py-1">
                       {day.allocatedMinutes} minutos
                     </span>

@@ -20,6 +20,7 @@ const scheduleDaySchema = z
       .int("La duración debe expresarse en minutos.")
       .min(1, "La duración mínima es de 1 minuto.")
       .max(1440, "La duración máxima es de 1440 minutos."),
+    startTime: z.string(),
     alertBeforeStartMinutes: z
       .number()
       .int()
@@ -28,12 +29,20 @@ const scheduleDaySchema = z
       .nullable(),
     alertOnEnd: z.boolean(),
   })
-  .superRefine(({ activityId, enabled }, context) => {
+  .superRefine(({ activityId, enabled, startTime }, context) => {
     if (enabled && !z.string().uuid().safeParse(activityId).success) {
       context.addIssue({
         code: "custom",
         message: "Selecciona una actividad para este día.",
         path: ["activityId"],
+      });
+    }
+
+    if (enabled && !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) {
+      context.addIssue({
+        code: "custom",
+        message: "Indica la hora en la que realizarás esta actividad.",
+        path: ["startTime"],
       });
     }
   });

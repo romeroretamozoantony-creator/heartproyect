@@ -48,12 +48,13 @@ export async function saveActivitySchedules(
         activityId: day.activityId,
         dayOfWeek: day.dayOfWeek,
         allocatedMinutes: day.allocatedMinutes,
+        startTime: day.startTime,
         alertBeforeStartMinutes: day.alertBeforeStartMinutes,
         alertOnEnd: day.alertOnEnd,
       }));
 
     const valid = await mutateDemoState((state) => {
-      if (schedules.some((day) => !state.activities.some((activity) => activity.id === day.activityId))) return false;
+      if (schedules.some((day) => !state.activities.some((activity) => activity.id === day.activityId && activity.kind === "rutina"))) return false;
       state.schedules = schedules;
       return true;
     });
@@ -89,6 +90,7 @@ export async function saveActivitySchedules(
         activity_id: day.activityId,
         day_of_week: day.dayOfWeek,
         allocated_minutes: day.allocatedMinutes,
+        start_time: day.startTime,
         alert_before_start_minutes: day.alertBeforeStartMinutes,
         alert_on_end: day.alertOnEnd,
       }));
@@ -102,7 +104,7 @@ export async function saveActivitySchedules(
       return {
         status: "error",
         message: missingMigration
-          ? "Falta aplicar la migración 004 de cronogramas en Supabase."
+          ? "Falta aplicar la migración de cronogramas en Supabase."
           : "No se pudo guardar el cronograma. Inténtalo nuevamente.",
       };
     }

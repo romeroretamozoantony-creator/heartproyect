@@ -65,7 +65,8 @@ async function choose(page, label, text) {
   for (let i = 1; i < 7; i++) await page.locator(`#schedule-${i}-enabled`).uncheck();
   await page.locator('#schedule-0-enabled').check();
   await page.locator('#schedule-0-activity').click();
-  await page.getByRole('option', { name: title, exact: true }).click();
+  await page.getByRole('option', { name: 'Bailar', exact: true }).click();
+  await page.locator('#schedule-0-start').fill('19:00');
   await page.locator('#schedule-0-minutes').fill('1');
   await page.getByRole('button', { name: 'Guardar cronograma', exact: true }).click();
   await contains(page, 'Cronograma guardado en la demostración local.');
@@ -81,7 +82,7 @@ async function choose(page, label, text) {
 
   await page.getByRole('button', { name: 'Diseñar plan', exact: true }).click();
   await page.waitForURL('**/plan');
-  await contains(page, title);
+  await contains(page, 'Bailar');
   await page.getByRole('button', { name: 'Confirmar plan', exact: true }).click();
   await contains(page, 'Plan confirmado');
   console.log('PASS 5-6: plan generado desde el cronograma y confirmado');
@@ -100,7 +101,7 @@ async function choose(page, label, text) {
 
   await page.getByRole('link', { name: 'Consultar progreso', exact: true }).click();
   await page.waitForURL('**/progress');
-  await contains(page, title);
+  await contains(page, 'Bailar');
   await contains(page, 'Cumplida');
   await contains(page, '100%');
   await contains(page, 'material-integracion.txt');

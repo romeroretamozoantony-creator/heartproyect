@@ -73,9 +73,9 @@ export function ActivityForm(props: ActivityFormProps) {
       ? {
           title: props.activity.title,
           category: props.activity.category,
-          activityDate: props.activity.activityDate,
-          startTime: props.activity.startTime,
-          endTime: props.activity.endTime,
+          activityDate: props.activity.activityDate ?? "",
+          startTime: props.activity.startTime ?? "",
+          endTime: props.activity.endTime ?? "",
           priority: props.activity.priority,
         }
       : {

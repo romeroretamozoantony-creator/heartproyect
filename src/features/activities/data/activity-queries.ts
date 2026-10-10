@@ -3,6 +3,7 @@ import "server-only";
 import { mapActivityRow } from "@/features/activities/lib/activity-mapper";
 import type {
   Activity,
+  ActivityKind,
   ActivityRow,
 } from "@/features/activities/types/activity";
 import { isDemoMode } from "@/features/demo/mode";
@@ -15,9 +16,16 @@ export type ActivitiesQueryResult = Readonly<{
   error?: string;
 }>;
 
-export async function getActivities(): Promise<ActivitiesQueryResult> {
+// "registro" son los datos del día a día; "rutina" son las opciones del cronograma.
+export async function getActivities(
+  kind: ActivityKind = "registro",
+): Promise<ActivitiesQueryResult> {
   if (isDemoMode()) {
-    return { activities: (await readDemoState()).activities };
+    return {
+      activities: (await readDemoState()).activities.filter(
+        (activity) => activity.kind === kind,
+      ),
+    };
   }
 
   if (!hasSupabasePublicEnv()) {
@@ -44,11 +52,13 @@ export async function getActivities(): Promise<ActivitiesQueryResult> {
     const { data, error } = await supabase
       .from("activities")
       .select(
-        "id, title, category, activity_date, start_time, end_time, priority, created_at",
+        "id, title, category, kind, activity_date, start_time, end_time, priority, created_at",
       )
       .eq("user_id", userId)
-      .order("activity_date", { ascending: true })
-      .order("start_time", { ascending: true });
+      .eq("kind", kind)
+      .order("activity_date", { ascending: true, nullsFirst: false })
+      .order("start_time", { ascending: true, nullsFirst: false })
+      .order("title", { ascending: true });
 
     if (error) {
       return {

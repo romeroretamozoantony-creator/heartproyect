@@ -355,7 +355,7 @@ export function ProgressDashboard({
                   <div className="min-w-0">
                     <CardTitle>{activity.title}</CardTitle>
                     <CardDescription className="mt-1">
-                      {CATEGORY_LABELS[activity.category]} · Prioridad {PRIORITY_LABELS[activity.priority]} · {formatDate(activity.activityDate)}
+                      {CATEGORY_LABELS[activity.category]} · Prioridad {PRIORITY_LABELS[activity.priority]} · {activity.activityDate ? formatDate(activity.activityDate) : "Rutina"}
                     </CardDescription>
                   </div>
                   <ActivityStatusBadge activity={activity} />

@@ -11,6 +11,7 @@ export function mapActivityScheduleRow(
     activityId: row.activity_id,
     dayOfWeek: row.day_of_week,
     allocatedMinutes: row.allocated_minutes,
+    startTime: row.start_time ? row.start_time.slice(0, 5) : null,
     alertBeforeStartMinutes: row.alert_before_start_minutes,
     alertOnEnd: row.alert_on_end,
   };

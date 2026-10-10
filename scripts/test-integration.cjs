@@ -24,7 +24,7 @@ const { activitySchema } = require('../src/features/activities/schemas/activity-
 const { weeklyScheduleSchema } = require('../src/features/schedule/schemas/weekly-schedule-schema.ts');
 const { getEvaluationLevel } = require('../src/features/evaluations/lib/evaluation-scale.ts');
 const activity = { id: '10000000-0000-4000-8000-000000000001', title: 'Integración', category: 'academic', activityDate: '2026-10-14', startTime: '18:00', endTime: '19:30', priority: 'high', createdAt: '2026-10-10T12:00:00Z' };
-const schedule = { id: '20000000-0000-4000-8000-000000000001', activityId: activity.id, dayOfWeek: 0, allocatedMinutes: 60, alertBeforeStartMinutes: null, alertOnEnd: false };
+const schedule = { id: '20000000-0000-4000-8000-000000000001', activityId: activity.id, dayOfWeek: 0, allocatedMinutes: 60, startTime: '18:00', alertBeforeStartMinutes: null, alertOnEnd: false };
 const instant = new Date('2026-10-10T12:00:00Z');
 function state() {
   const generated = generatePomodoroPlan({ activities: [activity], schedules: [schedule], now: instant });

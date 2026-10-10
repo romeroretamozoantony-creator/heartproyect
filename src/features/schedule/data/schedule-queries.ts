@@ -41,7 +41,7 @@ export async function getActivitySchedules(): Promise<ScheduleQueryResult> {
     const { data, error } = await supabase
       .from("activity_schedules")
       .select(
-        "id, activity_id, day_of_week, allocated_minutes, alert_before_start_minutes, alert_on_end",
+        "id, activity_id, day_of_week, allocated_minutes, start_time, alert_before_start_minutes, alert_on_end",
       )
       .eq("user_id", userId)
       .order("day_of_week", { ascending: true });
