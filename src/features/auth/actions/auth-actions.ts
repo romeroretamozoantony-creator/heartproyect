@@ -151,7 +151,11 @@ export async function signUp(
       const message =
         error.code === "user_already_exists"
           ? "No fue posible crear la cuenta con esos datos."
-          : "No se pudo crear la cuenta. Revisa los datos e inténtalo nuevamente.";
+          : error.code === "over_email_send_rate_limit"
+            ? "Se alcanzó el límite de correos de confirmación. Espera un rato e inténtalo nuevamente."
+            : error.code === "email_address_invalid"
+              ? "El correo electrónico no es válido."
+              : "No se pudo crear la cuenta. Revisa los datos e inténtalo nuevamente.";
 
       return { status: "error", message };
     }
